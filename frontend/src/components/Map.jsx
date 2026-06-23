@@ -48,16 +48,16 @@ function Map() {
       { id: 17, position: [21.00, 105.80], status: "normal", area: "Cầu Giấy" },
     ];
 
-    // Thêm nhiều xe ùn tắc quanh vòng xuyến Yên Nghĩa
-    const yennghia = { lat: 21.0008, lng: 105.7580 };
+    // Thêm nhiều xe ùn tắc quanh vòng xuyến Yên Nghĩa (gần Đại học Phenikaa)
+    const yennghia = { lat: 20.9611686, lng: 105.7476241 };
     for (let i = 0; i < 40; i++) {
-      const jitterLat = (Math.random() - 0.5) * 0.0045; // ~ small offset
-      const jitterLng = (Math.random() - 0.5) * 0.0045;
+      const jitterLat = (Math.random() - 0.5) * 0.0035; // nhỏ hơn để tập trung quanh vòng xuyến
+      const jitterLng = (Math.random() - 0.5) * 0.0035;
       base.push({
         id: 100 + i,
         position: [yennghia.lat + jitterLat, yennghia.lng + jitterLng],
         status: "congested",
-        area: "Yên Nghĩa",
+        area: "Yên Nghĩa (Phenikaa)",
       });
     }
 

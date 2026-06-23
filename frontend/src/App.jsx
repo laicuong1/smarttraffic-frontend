@@ -1,4 +1,5 @@
-﻿import { motion } from "framer-motion";
+﻿import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import Map from "./components/Map";
 import TrafficChart from "./components/Chart";
 import Alert from "./components/Alert";
@@ -28,6 +29,10 @@ const cardItem = {
 };
 
 function App() {
+  const [incidents, setIncidents] = useState([]);
+  const [apiLoading, setApiLoading] = useState(true);
+  const [apiError, setApiError] = useState(null);
+
   const congestedArea = {
     name: "Hoàn Kiếm",
     address: "Trung tâm Hà Nội",
@@ -52,6 +57,42 @@ function App() {
       { id: 15, type: "Xe máy", speed: "2.5 km/h", time: "7 phút" },
     ],
   };
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function fetchTrafficIncidents() {
+      try {
+        const response = await fetch("https://jsonplaceholder.typicode.com/posts?_limit=5", {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Lỗi API: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        setIncidents(
+          data.map((item) => ({
+            id: item.id,
+            title: `Sự cố giao thông #${item.id}`,
+            body: `Mô tả sự cố giao thông số ${item.id}: cập nhật tình trạng giao thông, ùn tắc, tai nạn hoặc điều tiết luồng xe.`,
+          }))
+        );
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          console.error("Fetch API lỗi:", error);
+          setApiError(error.message || "Không thể tải dữ liệu API.");
+        }
+      } finally {
+        setApiLoading(false);
+      }
+    }
+
+    fetchTrafficIncidents();
+
+    return () => controller.abort();
+  }, []);
 
   return (
     <div className="min-h-screen text-slate-100">
@@ -117,6 +158,48 @@ function App() {
                   <p className="text-[11px] uppercase tracking-[0.3em] text-slate-400">Tốc độ TB</p>
                   <p className="mt-2 text-3xl font-semibold text-emerald-300">3 km/h</p>
                 </motion.div>
+              </div>
+            </div>
+          </motion.section>
+
+          <motion.section
+            initial="hidden"
+            animate="visible"
+            variants={sectionFade}
+            className="mb-6 rounded-[2rem] border border-emerald-200/10 bg-slate-950/70 p-6 shadow-2xl shadow-emerald-950/20 backdrop-blur-3xl"
+          >
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm uppercase tracking-[0.32em] text-emerald-300/80">API trực tiếp</p>
+                  <h2 className="text-2xl font-semibold text-slate-100">Dữ liệu API giao thông</h2>
+                </div>
+                {apiLoading ? (
+                  <span className="text-sm text-slate-400">Đang tải dữ liệu...</span>
+                ) : apiError ? (
+                  <span className="text-sm text-amber-300">Lỗi API: {apiError}</span>
+                ) : (
+                  <span className="text-sm text-emerald-300">{incidents.length} báo cáo được tải</span>
+                )}
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {apiLoading ? (
+                  <div className="rounded-3xl bg-slate-900/80 p-4 text-slate-400">Đang kết nối tới API...</div>
+                ) : apiError ? (
+                  <div className="rounded-3xl bg-slate-900/80 p-4 text-amber-200">{apiError}</div>
+                ) : (
+                  incidents.map((incident) => (
+                    <div
+                      key={incident.id}
+                      className="rounded-3xl bg-slate-900/80 p-4 ring-1 ring-emerald-500/10 shadow-xl shadow-emerald-500/5"
+                    >
+                      <p className="text-sm text-slate-400">Báo cáo #{incident.id}</p>
+                      <h3 className="mt-2 text-lg font-semibold text-slate-100">{incident.title}</h3>
+                      <p className="mt-2 text-sm text-slate-400">{incident.body}</p>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </motion.section>

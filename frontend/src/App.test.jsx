@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { vi } from 'vitest'
 import App from './App.jsx'
 
@@ -7,15 +7,30 @@ vi.mock('./components/Chart', () => ({ default: () => <div data-testid="Chart" /
 vi.mock('./components/Alert', () => ({ default: () => <div data-testid="Alert" /> }))
 vi.mock('./components/TrafficLight', () => ({ default: ({ location }) => <div data-testid="TrafficLight">{location}</div> }))
 
+const mockFetch = vi.fn(() =>
+  Promise.resolve({ ok: true, json: () => Promise.resolve([]) })
+)
+
 describe('App', () => {
-  it('renders the app heading and congested area name', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', mockFetch)
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+    mockFetch.mockReset()
+  })
+
+  it('renders the app heading and congested area name', async () => {
     render(<App />)
 
-    expect(screen.getByText(/Smart Traffic Command Center/i)).toBeInTheDocument()
-    expect(screen.getByText(/Hoàn Kiếm/i)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Smart Traffic Command Center/i })).toBeInTheDocument()
+    expect(screen.getByText(/Vùng ùn tắc chủ đạo:\s*Hoàn Kiếm/i)).toBeInTheDocument()
     expect(screen.getByTestId('Map')).toBeInTheDocument()
     expect(screen.getByTestId('Chart')).toBeInTheDocument()
     expect(screen.getByTestId('Alert')).toBeInTheDocument()
     expect(screen.getByTestId('TrafficLight')).toHaveTextContent('Hoàn Kiếm')
+
+    await waitFor(() => expect(mockFetch).toHaveBeenCalled())
   })
 })
