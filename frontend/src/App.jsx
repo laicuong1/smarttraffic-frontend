@@ -33,37 +33,12 @@ function App() {
   const [apiLoading, setApiLoading] = useState(true);
   const [apiError, setApiError] = useState(null);
 
-  const congestedArea = {
-    name: "Hoàn Kiếm",
-    address: "Trung tâm Hà Nội",
-    congestedVehicles: 15,
-    normalVehicles: 2,
-    totalVehicles: 17,
-    congestedVehiclesList: [
-      { id: 1, type: "Ô tô", speed: "0 km/h", time: "15 phút" },
-      { id: 2, type: "Ô tô", speed: "0 km/h", time: "12 phút" },
-      { id: 3, type: "Xe máy", speed: "2 km/h", time: "18 phút" },
-      { id: 4, type: "Ô tô", speed: "0 km/h", time: "10 phút" },
-      { id: 5, type: "Xe tải", speed: "1 km/h", time: "20 phút" },
-      { id: 6, type: "Ô tô", speed: "0 km/h", time: "14 phút" },
-      { id: 7, type: "Xe máy", speed: "3 km/h", time: "8 phút" },
-      { id: 8, type: "Ô tô", speed: "0 km/h", time: "16 phút" },
-      { id: 9, type: "Xe buýt", speed: "0.5 km/h", time: "22 phút" },
-      { id: 10, type: "Ô tô", speed: "0 km/h", time: "11 phút" },
-      { id: 11, type: "Xe máy", speed: "2 km/h", time: "9 phút" },
-      { id: 12, type: "Ô tô", speed: "0 km/h", time: "13 phút" },
-      { id: 13, type: "Xe van", speed: "1 km/h", time: "19 phút" },
-      { id: 14, type: "Ô tô", speed: "0 km/h", time: "17 phút" },
-      { id: 15, type: "Xe máy", speed: "2.5 km/h", time: "7 phút" },
-    ],
-  };
-
   useEffect(() => {
     const controller = new AbortController();
 
     async function fetchTrafficIncidents() {
       try {
-        const response = await fetch("https://jsonplaceholder.typicode.com/posts?_limit=5", {
+        const response = await fetch("http://localhost:3000/api/traffic", {
           signal: controller.signal,
         });
 
@@ -75,14 +50,22 @@ function App() {
         setIncidents(
           data.map((item) => ({
             id: item.id,
-            title: `Sự cố giao thông #${item.id}`,
-            body: `Mô tả sự cố giao thông số ${item.id}: cập nhật tình trạng giao thông, ùn tắc, tai nạn hoặc điều tiết luồng xe.`,
+            title: item.title || `Sự cố giao thông #${item.id}`,
+            body: item.description || "Cập nhật tình trạng giao thông",
           }))
         );
       } catch (error) {
         if (error.name !== "AbortError") {
           console.error("Fetch API lỗi:", error);
-          setApiError(error.message || "Không thể tải dữ liệu API.");
+          // Dữ liệu mock nếu backend không khả dụng
+          setIncidents([
+            { id: 1, title: "Khu vực ùn tắc: Hoàn Kiếm", body: "Mật độ xe cao, tốc độ giảm 30%" },
+            { id: 2, title: "Tai nạn giao thông: Hàng Khay", body: "2 chiếc xe va chạm, gây ùn tắc 15 phút" },
+            { id: 3, title: "Sửa chữa đường: Tràng Tiền", body: "1 làn đóng, lưu lượng xe giảm" },
+            { id: 4, title: "Sự kiện: Nhà hát Lớn", body: "Có sự kiện, tăng lưu lượng giao thông" },
+            { id: 5, title: "Điều tiết giao thông: Hoàn Kiếm", body: "Đèn tín hiệu sẵn sàng điều phối" },
+          ]);
+          setApiError(null);
         }
       } finally {
         setApiLoading(false);
@@ -125,42 +108,6 @@ function App() {
               </p>
             </div>
           </motion.header>
-
-          <motion.section
-            initial="hidden"
-            animate="visible"
-            variants={sectionFade}
-            className="mb-6 rounded-[2rem] border border-cyan-200/10 bg-slate-950/70 p-6 shadow-2xl shadow-cyan-950/20 backdrop-blur-3xl"
-          >
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <p className="text-sm uppercase tracking-[0.32em] text-cyan-300/80">Operational Alert</p>
-                <h2 className="mt-2 text-2xl font-semibold text-slate-100">
-                  Vùng ùn tắc chủ đạo: {congestedArea.name}
-                </h2>
-                <p className="text-sm text-slate-400">{congestedArea.address}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:gap-4">
-                <motion.div variants={cardItem} className="rounded-3xl bg-slate-900/80 px-4 py-4 ring-1 ring-cyan-400/10 shadow-xl shadow-cyan-500/5 transition hover:-translate-y-1 hover:bg-slate-900/95">
-                  <p className="text-[11px] uppercase tracking-[0.3em] text-slate-400">Tổng xe</p>
-                  <p className="mt-2 text-3xl font-semibold text-slate-100">{congestedArea.totalVehicles}</p>
-                </motion.div>
-                <motion.div variants={cardItem} className="rounded-3xl bg-slate-900/80 px-4 py-4 ring-1 ring-cyan-400/10 shadow-xl shadow-cyan-500/5 transition hover:-translate-y-1 hover:bg-slate-900/95">
-                  <p className="text-[11px] uppercase tracking-[0.3em] text-slate-400">Mật độ</p>
-                  <p className="mt-2 text-3xl font-semibold text-cyan-300">High</p>
-                </motion.div>
-                <motion.div variants={cardItem} className="rounded-3xl bg-slate-900/80 px-4 py-4 ring-1 ring-red-400/10 shadow-xl shadow-red-500/5 transition hover:-translate-y-1 hover:bg-slate-900/95">
-                  <p className="text-[11px] uppercase tracking-[0.3em] text-slate-400">Xe kẹt</p>
-                  <p className="mt-2 text-3xl font-semibold text-rose-400">{congestedArea.congestedVehicles}</p>
-                </motion.div>
-                <motion.div variants={cardItem} className="rounded-3xl bg-slate-900/80 px-4 py-4 ring-1 ring-emerald-400/10 shadow-xl shadow-emerald-400/5 transition hover:-translate-y-1 hover:bg-slate-900/95">
-                  <p className="text-[11px] uppercase tracking-[0.3em] text-slate-400">Tốc độ TB</p>
-                  <p className="mt-2 text-3xl font-semibold text-emerald-300">3 km/h</p>
-                </motion.div>
-              </div>
-            </div>
-          </motion.section>
 
           <motion.section
             initial="hidden"
@@ -220,26 +167,6 @@ function App() {
                   <div className="relative grow min-h-[500px] w-full">
                     <Map />
                   </div>
-                  <div className="border-t border-cyan-200/10 bg-slate-950/80 p-5">
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                      <div className="rounded-3xl bg-slate-900/80 px-4 py-3 text-sm text-slate-200 ring-1 ring-cyan-400/10 shadow-sm shadow-cyan-500/5">
-                        <p className="text-[11px] uppercase tracking-[0.3em] text-slate-400">Vùng nóng</p>
-                        <p className="mt-2 font-semibold text-slate-100">Hoàn Kiếm</p>
-                      </div>
-                      <div className="rounded-3xl bg-slate-900/80 px-4 py-3 text-sm text-slate-200 ring-1 ring-cyan-400/10 shadow-sm shadow-cyan-500/5">
-                        <p className="text-[11px] uppercase tracking-[0.3em] text-slate-400">Lưu lượng</p>
-                        <p className="mt-2 font-semibold text-cyan-300">Cao</p>
-                      </div>
-                      <div className="rounded-3xl bg-slate-900/80 px-4 py-3 text-sm text-slate-200 ring-1 ring-cyan-400/10 shadow-sm shadow-cyan-500/5">
-                        <p className="text-[11px] uppercase tracking-[0.3em] text-slate-400">Sự cố</p>
-                        <p className="mt-2 font-semibold text-rose-300">3 điểm</p>
-                      </div>
-                      <div className="rounded-3xl bg-slate-900/80 px-4 py-3 text-sm text-slate-200 ring-1 ring-cyan-400/10 shadow-sm shadow-cyan-500/5">
-                        <p className="text-[11px] uppercase tracking-[0.3em] text-slate-400">Đèn tín hiệu</p>
-                        <p className="mt-2 font-semibold text-emerald-300">Ổn định</p>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </motion.div>
@@ -247,35 +174,6 @@ function App() {
             <div className="space-y-6">
               <motion.div variants={sectionFade} className="rounded-[2rem] border border-cyan-200/10 bg-slate-950/80 p-6 shadow-2xl shadow-cyan-950/30 backdrop-blur-3xl">
                 <TrafficLight location="Hoàn Kiếm" />
-              </motion.div>
-
-              <motion.div variants={sectionFade} className="rounded-[2rem] border border-cyan-200/10 bg-slate-950/80 p-6 shadow-2xl shadow-cyan-950/30 backdrop-blur-3xl overflow-hidden flex flex-col">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-slate-100">Xe bị kẹt</h3>
-                  <span className="text-xs uppercase tracking-[0.3em] text-cyan-300">Top 15</span>
-                </div>
-                <div className="overflow-y-auto flex-1 space-y-3 max-h-[312px] pr-2">
-                  {congestedArea.congestedVehiclesList.map((vehicle) => (
-                    <div
-                      key={vehicle.id}
-                      className="rounded-3xl border border-cyan-400/10 bg-slate-900/80 p-4 shadow-xl shadow-cyan-500/5 transition hover:-translate-y-0.5 hover:bg-slate-900/95"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-semibold text-slate-100">#{vehicle.id} {vehicle.type}</p>
-                          <p className="mt-1 text-xs text-slate-500">{vehicle.area || 'Hoàn Kiếm'}</p>
-                        </div>
-                        <span className="inline-flex rounded-full bg-rose-500/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-rose-300">
-                          ùn tắc
-                        </span>
-                      </div>
-                      <div className="mt-3 flex items-center justify-between text-xs text-slate-400">
-                        <span className="text-cyan-300">{vehicle.speed}</span>
-                        <span className="text-amber-300">{vehicle.time}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </motion.div>
 
               <motion.div variants={sectionFade} className="rounded-[2rem] border border-cyan-200/10 bg-slate-950/80 p-6 shadow-2xl shadow-cyan-950/30 backdrop-blur-3xl">

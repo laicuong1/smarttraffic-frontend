@@ -25,7 +25,6 @@ describe('App', () => {
     render(<App />)
 
     expect(screen.getByRole('heading', { name: /Smart Traffic Command Center/i })).toBeInTheDocument()
-    expect(screen.getByText(/Vùng ùn tắc chủ đạo:\s*Hoàn Kiếm/i)).toBeInTheDocument()
     expect(screen.getByTestId('Map')).toBeInTheDocument()
     expect(screen.getByTestId('Chart')).toBeInTheDocument()
     expect(screen.getByTestId('Alert')).toBeInTheDocument()
